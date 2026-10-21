@@ -42,13 +42,13 @@ public sealed class SeguridadServicio(IAlmacen db, ISecretos secretos, IContexto
         Validacion.Exigir(token is { Length: 64 }, "Autorización de administrador requerida.", 403);
         Validacion.Exigir(await db.Consumir(HashToken(token!), contexto.UsuarioId!.Value, accion, reloj.GetUtcNow()), "Autorización inválida, usada o vencida.", 403);
     }
-    public Task<UsuarioDto> CambiarPassword(CambiarCredenciales datos) => db.Transaccion(async () =>
+    public Task<UsuarioDto?> CambiarPassword(CambiarCredenciales datos) => db.Transaccion<UsuarioDto?>(async () =>
     {
         Validacion.Password(datos.PasswordNueva);
         Validacion.Exigir(datos.PasswordActual is { Length: > 0 and <= 128 }, "Contraseña actual inválida.");
         var u = await db.Usuario(contexto.UsuarioId!.Value) ?? throw new ErrorAplicacion(401, "Sesión inválida.");
         var verificado = await Verificar(u, datos.PasswordActual, false, true, "CambioPassword");
-        if (verificado == null) return null!;
+        if (verificado == null) return null;
         Validacion.Exigir(!secretos.Verificar(u, u.PasswordHash!, datos.PasswordNueva), "Usá una contraseña diferente.");
         u.PasswordHash = secretos.Hash(u, datos.PasswordNueva); u.DebeCambiarCredenciales = false;
         u.VersionSeguridad = Guid.CreateVersion7(); await db.Guardar(); return UsuarioDto.De(u);
