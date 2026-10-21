@@ -1,0 +1,11 @@
+**/bin/
+**/obj/
+**/node_modules/
+Frontend/dist/
+Backend/Pollotikito.Api/wwwroot/
+Backend/Pollotikito.Api/storage/
+**/TestResults/
+.vs/
+*.user
+.env
+*.local.json
