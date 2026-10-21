@@ -9,3 +9,5 @@ Backend/Pollotikito.Api/storage/
 *.user
 .env
 *.local.json
+artifacts/
+*.tsbuildinfo
