@@ -1,3 +1,11 @@
+.detalle-elecciones {
+  padding-left: 1rem;
+  font-size: 0.9em;
+}
+.modal {
+  max-height: 90vh;
+  overflow-y: auto;
+}
 .caja {
   padding: 20px;
 }

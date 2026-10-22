@@ -91,6 +91,7 @@ public sealed class VentasServicio(IComercio db, IAlmacen administracion, IConse
     }
     private static string Huella(CobrarVenta d)
     {
+        Validacion.Exigir(d.Lineas.All(l => (l.Modificadores?.Count ?? 0) <= 100 && (l.Componentes?.Count ?? 0) <= 500 && (l.Componentes?.All(c => c != null) ?? true)), "Elecciones inválidas.");
         static string N(decimal n) => n.ToString("G29", CultureInfo.InvariantCulture);
         static object D(DescuentoSolicitud? x) => new { Tipo = x?.Tipo ?? TipoDescuento.Ninguno, Valor = N(x?.Valor ?? 0), Motivo = x?.Motivo ?? "" };
         var canonico = new { d.SesionCajaId, d.TipoOrden, Lineas = d.Lineas.Select(l => new { l.ProductoId, l.Cantidad, Nota = l.Nota ?? "", Descuento = D(l.Descuento) }),

@@ -7,8 +7,29 @@ import {
   nombreMetodo,
   nombreOrden,
 } from "../comercio";
-import type { Reporte, Venta, Sesion, ResumenMetodo } from "../comercio";
+import type { Reporte, Venta, Sesion, ResumenMetodo, Linea } from "../comercio";
 import { Campo, ErrorTexto } from "./ui";
+function DetalleElecciones({ linea: l }: { linea: Linea }) {
+  return (
+    <div className="detalle-elecciones">
+      {l.modificadores?.map((m, i) => (
+        <p key={"m" + i}>
+          ↳ {m.nombreGrupo}: {m.nombreOpcion} (+{moneda(m.precioAdicional)} por
+          unidad)
+        </p>
+      ))}
+      {l.componentes?.map((c, i) => (
+        <p key={"c" + i}>
+          ↳ {c.nombreComponente}: {c.cantidadPorUnidad} × {c.nombreProducto}
+          {c.recargoUnitario > 0
+            ? ` (+${moneda(c.recargoUnitario)} cada uno)`
+            : ""}{" "}
+          por unidad
+        </p>
+      ))}
+    </div>
+  );
+}
 
 export function Tiquete({
   venta,
@@ -80,6 +101,7 @@ export function Tiquete({
             {l.descuentoAutomatico > 0 && (
               <p>Descuento automático: −{moneda(l.descuentoAutomatico)}</p>
             )}
+            <DetalleElecciones linea={l} />
             {l.descuentoManual > 0 && (
               <p>
                 Descuento manual: −{moneda(l.descuentoManual)} (
@@ -263,6 +285,28 @@ export function ReporteSesion({
           </p>
         )}
         <h2>Movimientos</h2>
+        {r.detalleVentas && (
+          <>
+            <h2>Detalle de ventas y elecciones</h2>
+            {r.detalleVentas.map((v) => (
+              <div className="linea-tiquete" key={v.id}>
+                <h3>
+                  {v.prefijo}
+                  {v.numero} · {v.estado} · {moneda(v.total)}
+                </h3>
+                {v.lineas.map((l) => (
+                  <div key={l.id}>
+                    <p>
+                      {l.cantidad} × {l.nombre} · {moneda(l.total)}
+                    </p>
+                    <DetalleElecciones linea={l} />
+                    {l.nota && <p>Nota: {l.nota}</p>}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </>
+        )}
         <table>
           <thead>
             <tr>

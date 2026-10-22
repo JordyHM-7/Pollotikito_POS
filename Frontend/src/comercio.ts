@@ -1,3 +1,4 @@
+import type { EleccionComponente } from "./menu";
 export type TipoDescuento = "Ninguno" | "Porcentaje" | "Monto";
 export type TipoOrden = "ComerAqui" | "ParaLlevar" | "Express";
 export type MetodoPago = "Efectivo" | "Tarjeta" | "Sinpe";
@@ -8,6 +9,9 @@ export type Categoria = {
   activo: boolean;
 };
 export type Producto = {
+  esCombo: boolean;
+  disponible: boolean;
+  advertencias: string[];
   id: string;
   categoriaId: string;
   nombre: string;
@@ -32,6 +36,8 @@ export const sinDescuento: Descuento = {
   motivo: null,
 };
 export type LineaSolicitud = {
+  modificadores?: string[];
+  componentes?: EleccionComponente[];
   productoId: string;
   cantidad: number;
   nota: string;
@@ -67,6 +73,17 @@ export type Sesion = {
   conteo: { denominacion: number; cantidad: number }[];
 };
 export type Linea = {
+  modificadores?: {
+    nombreGrupo: string;
+    nombreOpcion: string;
+    precioAdicional: number;
+  }[];
+  componentes?: {
+    nombreComponente: string;
+    nombreProducto: string;
+    cantidadPorUnidad: number;
+    recargoUnitario: number;
+  }[];
   id: string;
   nombre: string;
   cantidad: number;
@@ -124,6 +141,7 @@ export type Movimiento = {
   fecha: string;
 };
 export type Reporte = {
+  detalleVentas?: Venta[];
   sesion: Sesion;
   ventasPorMetodo: ResumenMetodo[];
   anulacionesPorMetodo: ResumenMetodo[];

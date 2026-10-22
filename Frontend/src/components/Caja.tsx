@@ -22,6 +22,12 @@ import type {
   PagoSolicitud,
 } from "../comercio";
 import { Campo, ErrorTexto } from "./ui";
+import type { Menu } from "../menu";
+import {
+  Personalizar,
+  ResumenElecciones,
+  tieneElecciones,
+} from "./Personalizar";
 import {
   CierreForm,
   ReporteSesion,
@@ -175,6 +181,7 @@ function CajaAbierta({
   const [catalogo, setCatalogo] = useState<{
       categorias: Categoria[];
       productos: Producto[];
+      menu?: Menu;
     }>({ categorias: [], productos: [] }),
     [cat, setCat] = useState(""),
     [lineas, setLineas] = useState<LineaSolicitud[]>([]),
@@ -187,6 +194,10 @@ function CajaAbierta({
     [cobro, setCobro] = useState(false),
     [tiquete, setTiquete] = useState<Venta | null>(null),
     [reporte, setReporte] = useState<Reporte | null>(null);
+  const [personalizar, setPersonalizar] = useState<{
+    producto: Producto;
+    indice?: number;
+  } | null>(null);
   const clave = `pollotikito:cobro-pendiente:${sesion.id}`;
   const [pendiente, setPendiente] = useState<SolicitudVenta | null>(() => {
     try {
@@ -253,10 +264,18 @@ function CajaAbierta({
     setTipo("ComerAqui");
   }
   function agregar(p: Producto) {
+    if (tieneElecciones(p, catalogo.menu)) {
+      setPersonalizar({ producto: p });
+      return;
+    }
     setLineas((ls) => {
       const i = ls.findIndex(
         (l) =>
-          l.productoId === p.id && !l.nota && l.descuento.tipo === "Ninguno",
+          l.productoId === p.id &&
+          !l.nota &&
+          l.descuento.tipo === "Ninguno" &&
+          !l.modificadores?.length &&
+          !l.componentes?.length,
       );
       return i < 0
         ? [
@@ -285,6 +304,24 @@ function CajaAbierta({
   const bloqueado = !!pendiente || cobro;
   return (
     <section className="caja">
+      {personalizar && catalogo.menu && (
+        <Personalizar
+          producto={personalizar.producto}
+          menu={catalogo.menu}
+          linea={
+            personalizar.indice === undefined
+              ? undefined
+              : lineas[personalizar.indice]
+          }
+          cancelar={() => setPersonalizar(null)}
+          guardar={(l) => {
+            if (personalizar.indice === undefined)
+              setLineas((ls) => [...ls, l]);
+            else cambiar(personalizar.indice, l);
+            setPersonalizar(null);
+          }}
+        />
+      )}
       <div className="titulo">
         <h1>Caja — {sesion.nombreCajero}</h1>
         <span>Inicial: {moneda(sesion.montoInicial)}</span>
@@ -415,6 +452,39 @@ function CajaAbierta({
                         maxLength={500}
                       />
                     </Campo>
+                    <ResumenElecciones linea={l} menu={catalogo.menu} />
+                    <div className="acciones">
+                      <button
+                        onClick={() =>
+                          setLineas((ls) => [
+                            ...ls,
+                            structuredClone({ ...l, cantidad: 1 }),
+                          ])
+                        }
+                      >
+                        Repetir
+                      </button>
+                      {catalogo.productos.find((p) => p.id === l.productoId) &&
+                        tieneElecciones(
+                          catalogo.productos.find(
+                            (p) => p.id === l.productoId,
+                          )!,
+                          catalogo.menu,
+                        ) && (
+                          <button
+                            onClick={() =>
+                              setPersonalizar({
+                                producto: catalogo.productos.find(
+                                  (p) => p.id === l.productoId,
+                                )!,
+                                indice: i,
+                              })
+                            }
+                          >
+                            Editar elecciones
+                          </button>
+                        )}
+                    </div>
                     <DescuentoCampos
                       titulo="Descuento de línea"
                       valor={l.descuento}

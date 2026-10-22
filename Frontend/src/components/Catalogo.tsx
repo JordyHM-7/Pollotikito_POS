@@ -5,6 +5,7 @@ import type { Configuracion } from "../api";
 import { moneda } from "../comercio";
 import type { Categoria, Producto, TipoDescuento } from "../comercio";
 import { Campo, ErrorTexto } from "./ui";
+import { ProductoMenu } from "./ProductoMenu";
 
 export function CatalogoAdmin() {
   const [categorias, setCategorias] = useState<Categoria[]>([]),
@@ -15,6 +16,7 @@ export function CatalogoAdmin() {
     [edicion, setEdicion] = useState<Producto | null | undefined>(),
     [categoria, setCategoria] = useState<Categoria | null | undefined>(),
     [iva, setIva] = useState(13);
+  const [menuProducto, setMenuProducto] = useState<Producto | null>(null);
   async function cargar() {
     const [c, p, b] = await Promise.all([
       api<Categoria[]>("/categorias"),
@@ -55,6 +57,19 @@ export function CatalogoAdmin() {
         </button>
       </nav>
       <ErrorTexto texto={error} />
+      {menuProducto && (
+        <>
+          <button onClick={() => setMenuProducto(null)}>
+            Cerrar elecciones
+          </button>
+          <ProductoMenu
+            key={menuProducto.id}
+            producto={menuProducto}
+            productos={productos}
+            actualizar={cargar}
+          />
+        </>
+      )}
       {tab === "categorias" ? (
         <>
           <button className="primario" onClick={() => setCategoria(null)}>
@@ -158,7 +173,15 @@ export function CatalogoAdmin() {
                   .filter((p) => !filtro || p.categoriaId === filtro)
                   .map((p) => (
                     <tr key={p.id}>
-                      <td>{p.nombre}</td>
+                      <td>
+                        {p.nombre}
+                        {p.esCombo ? " · Combo" : ""}
+                        {p.advertencias?.map((a) => (
+                          <p className="aviso" key={a}>
+                            {a}
+                          </p>
+                        ))}
+                      </td>
                       <td>
                         {categorias.find((c) => c.id === p.categoriaId)?.nombre}
                       </td>
@@ -178,6 +201,9 @@ export function CatalogoAdmin() {
                       <td>
                         <div className="acciones">
                           <button onClick={() => setEdicion(p)}>Editar</button>
+                          <button onClick={() => setMenuProducto(p)}>
+                            Grupos / componentes
+                          </button>
                           {p.activo && (
                             <button
                               onClick={() => void desactivar("productos", p.id)}
@@ -291,6 +317,7 @@ function ProductoForm({
   cancelar: () => void;
   guardar: () => Promise<void>;
 }) {
+  const [esCombo, setEsCombo] = useState(inicial?.esCombo ?? false);
   const [nombre, setNombre] = useState(inicial?.nombre || ""),
     [cat, setCat] = useState(inicial?.categoriaId || categorias[0]?.id || ""),
     [precio, setPrecio] = useState(inicial?.precio ?? 0),
@@ -319,6 +346,7 @@ function ProductoForm({
         id ? "PUT" : "POST",
         {
           nombre,
+          esCombo,
           categoriaId: cat,
           precio,
           tarifaIva: tarifa,
@@ -342,6 +370,14 @@ function ProductoForm({
   return (
     <form className="panel" onSubmit={enviar}>
       <h2>{inicial ? "Editar" : "Crear"} producto</h2>
+      <label className="check">
+        <input
+          type="checkbox"
+          checked={esCombo}
+          onChange={(e) => setEsCombo(e.target.checked)}
+        />
+        Es combo (configurá sus componentes después de guardar)
+      </label>
       <fieldset disabled={busy}>
         <div className="grid">
           <Campo titulo="Nombre">

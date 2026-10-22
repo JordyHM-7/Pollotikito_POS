@@ -58,5 +58,10 @@ public sealed record VentaDto(Guid Id, Guid SesionCajaId, string NombreCajero, s
         v.Fecha, v.Subtotal, v.Descuento, v.Base, v.Impuesto, v.Total, v.Vuelto, v.MotivoDescuentoGlobal,
         v.AnuladaPorId, v.AnuladaEn, v.MotivoAnulacion, v.NegocioNombre, v.NegocioRazonSocial, v.NegocioCedula,
         v.NegocioTelefono, v.NegocioCorreo, v.NegocioDireccion, v.NegocioLogo != null, v.PieTiquete,
-        v.Lineas.OrderBy(x => x.Orden).ToList(), v.Pagos);
+        OrdenarElecciones(v.Lineas), v.Pagos);
+    private static List<LineaVenta> OrdenarElecciones(List<LineaVenta> lineas)
+    {
+        foreach(var l in lineas){l.Modificadores=l.Modificadores.OrderBy(m=>m.Orden).ToList();l.Componentes=l.Componentes.OrderBy(c=>c.Orden).ToList();}
+        return lineas.OrderBy(l=>l.Orden).ToList();
+    }
 }

@@ -6,6 +6,7 @@ import { Login, CambioPassword } from "./components/Login";
 import { Usuarios } from "./components/Usuarios";
 import { Negocio } from "./components/Negocio";
 import { CatalogoAdmin } from "./components/Catalogo";
+import { Modificadores } from "./components/Modificadores";
 import { Caja } from "./components/Caja";
 import { SesionesAdmin } from "./components/Comprobantes";
 import "./style.css";
@@ -63,6 +64,12 @@ function App() {
           <>
             <nav aria-label="Administración">
               <button
+                className={vista === "modificadores" ? "elegido" : ""}
+                onClick={() => setVista("modificadores")}
+              >
+                Modificadores
+              </button>
+              <button
                 className={vista === "catalogo" ? "elegido" : ""}
                 onClick={() => setVista("catalogo")}
               >
@@ -87,7 +94,9 @@ function App() {
                 Negocio y consecutivos
               </button>
             </nav>
-            {vista === "usuarios" ? (
+            {vista === "modificadores" ? (
+              <Modificadores />
+            ) : vista === "usuarios" ? (
               <Usuarios actual={usuario} />
             ) : vista === "configuracion" ? (
               <Negocio />
