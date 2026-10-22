@@ -74,6 +74,8 @@ npm run dev
 
 Abrir la dirección local que imprime Vite (normalmente `http://127.0.0.1:5173`). Vite redirige `/api` a `http://localhost:5149`, manteniendo un único origen para el navegador. No configurar CORS ni JWT.
 
+En desarrollo deben estar ejecutándose **ambos procesos**: la API y Vite. Si solo está abierto Vite, las pantallas pueden cargar pero no se puede iniciar sesión. El proxy devuelve `503 ProblemDetails` con «La API no está disponible» cuando el backend no responde; no significa que la cuenta o el PIN sean incorrectos. Iniciar la API en la terminal que tenga configurada `ConnectionStrings__Pollotikito` y mantenerla abierta.
+
 Pantallas disponibles:
 
 - Acceso con selección de usuario y teclado numérico táctil para PIN, o usuario y contraseña de administrador.
