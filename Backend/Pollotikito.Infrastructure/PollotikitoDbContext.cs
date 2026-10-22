@@ -38,6 +38,7 @@ public sealed class PollotikitoDbContext(DbContextOptions<PollotikitoDbContext> 
         b.Entity<AutorizacionAdministrador>().HasIndex(x => x.TokenHash).IsUnique();
         b.Entity<AutorizacionAdministrador>().HasOne<Usuario>().WithMany().HasForeignKey(x => x.AdministradorId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<AutorizacionAdministrador>().HasOne<Usuario>().WithMany().HasForeignKey(x => x.SolicitanteId).OnDelete(DeleteBehavior.Restrict);
+        ModeloComercio.Configurar(b);
         foreach (var e in b.Model.GetEntityTypes())
         {
             e.SetTableName(Snake(e.GetTableName()!));
@@ -53,10 +54,10 @@ public sealed class PollotikitoDbContext(DbContextOptions<PollotikitoDbContext> 
         foreach (var e in ChangeTracker.Entries<Entidad>().Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted).ToList())
         {
             if (e.Entity is Bitacora && e.State != EntityState.Added) throw new InvalidOperationException("La bitácora es de solo inserción.");
-            if (e.Entity is Usuario && e.State == EntityState.Deleted) throw new InvalidOperationException("Los usuarios solo se desactivan.");
+            if (e.Entity is Usuario or Producto or Categoria && e.State == EntityState.Deleted) throw new InvalidOperationException("Los registros solo se desactivan.");
             if (e.State == EntityState.Added) e.Entity.CreadoEn = ahora;
             e.Entity.ActualizadoEn = ahora;
-            if (e.Entity is not (Usuario or ConfiguracionNegocio or Consecutivo)) continue;
+            if (e.Entity is not (Usuario or ConfiguracionNegocio or Consecutivo or Categoria or Producto)) continue;
             if (e.State == EntityState.Modified && !e.Properties.Any(p => p.IsModified && p.Metadata.Name is not (nameof(Usuario.IntentosFallidos) or nameof(Usuario.BloqueadoHasta) or nameof(Entidad.ActualizadoEn)))) continue;
             var credenciales = e.Entity is Usuario && e.Properties.Any(p => p.IsModified && p.Metadata.Name is nameof(Usuario.PinHash) or nameof(Usuario.PasswordHash));
             Bitacoras.Add(new Bitacora { SucursalId = e.Entity.SucursalId, UsuarioId = contexto.UsuarioId, Ip = contexto.Ip,

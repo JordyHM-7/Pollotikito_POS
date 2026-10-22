@@ -139,6 +139,44 @@ namespace Pollotikito.Infrastructure.Persistence.Migrations
                     b.ToTable("bitacora", (string)null);
                 });
 
+            modelBuilder.Entity("Pollotikito.Domain.Categoria", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("nombre");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer")
+                        .HasColumnName("orden");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("categorias", (string)null);
+                });
+
             modelBuilder.Entity("Pollotikito.Domain.ConfiguracionNegocio", b =>
                 {
                     b.Property<Guid>("Id")
@@ -262,6 +300,441 @@ namespace Pollotikito.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Pollotikito.Domain.ConteoDenominacion", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer")
+                        .HasColumnName("cantidad");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<int>("Denominacion")
+                        .HasColumnType("integer")
+                        .HasColumnName("denominacion");
+
+                    b.Property<Guid>("SesionCajaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sesion_caja_id");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SesionCajaId", "Denominacion")
+                        .IsUnique();
+
+                    b.ToTable("conteos_denominacion", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_conteo_cantidad", "cantidad >= 0");
+
+                            t.HasCheckConstraint("ck_denominacion", "denominacion IN (5,10,25,50,100,500,1000,2000,5000,10000,20000)");
+                        });
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.LineaVenta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<decimal>("Base")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("base");
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer")
+                        .HasColumnName("cantidad");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<decimal>("DescuentoAutomatico")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("descuento_automatico");
+
+                    b.Property<decimal>("DescuentoGlobal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("descuento_global");
+
+                    b.Property<decimal>("DescuentoManual")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("descuento_manual");
+
+                    b.Property<decimal>("Impuesto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("impuesto");
+
+                    b.Property<string>("MotivoDescuento")
+                        .HasColumnType("text")
+                        .HasColumnName("motivo_descuento");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nombre");
+
+                    b.Property<string>("Nota")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nota");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer")
+                        .HasColumnName("orden");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("precio_unitario");
+
+                    b.Property<Guid>("ProductoId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("producto_id");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.Property<decimal>("TarifaIva")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("tarifa_iva");
+
+                    b.Property<string>("TipoDescuentoManual")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tipo_descuento_manual");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("total");
+
+                    b.Property<decimal>("ValorDescuentoManual")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_descuento_manual");
+
+                    b.Property<Guid>("VentaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("venta_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("VentaId", "Orden")
+                        .IsUnique();
+
+                    b.ToTable("lineas_venta", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_linea_importes", "total >= 0 AND base + impuesto = total AND cantidad > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.MovimientoCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<DateTimeOffset>("Fecha")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha");
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("monto");
+
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("motivo");
+
+                    b.Property<Guid>("SesionCajaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sesion_caja_id");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tipo");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SesionCajaId");
+
+                    b.ToTable("movimientos_caja", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_movimiento_monto", "monto > 0");
+                        });
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.PagoVenta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<string>("Metodo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("metodo");
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("monto");
+
+                    b.Property<decimal?>("Recibido")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("recibido");
+
+                    b.Property<string>("Referencia")
+                        .HasColumnType("text")
+                        .HasColumnName("referencia");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.Property<Guid>("VentaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("venta_id");
+
+                    b.Property<decimal>("Vuelto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("vuelto");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("VentaId", "Metodo")
+                        .IsUnique();
+
+                    b.ToTable("pagos_venta", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_pago_importes", "monto >= 0 AND vuelto >= 0 AND ((metodo = 'Efectivo' AND recibido >= monto AND recibido - vuelto = monto) OR (metodo <> 'Efectivo' AND recibido IS NULL AND vuelto = 0))");
+                        });
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.Producto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("activo");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<Guid>("CategoriaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("categoria_id");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<DateTimeOffset?>("DescuentoDesde")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("descuento_desde");
+
+                    b.Property<DateTimeOffset?>("DescuentoHasta")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("descuento_hasta");
+
+                    b.Property<string>("Foto")
+                        .HasColumnType("text")
+                        .HasColumnName("foto");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("nombre");
+
+                    b.Property<int>("Orden")
+                        .HasColumnType("integer")
+                        .HasColumnName("orden");
+
+                    b.Property<decimal>("Precio")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("precio");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.Property<decimal>("TarifaIva")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("tarifa_iva");
+
+                    b.Property<string>("TipoDescuento")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tipo_descuento");
+
+                    b.Property<decimal>("ValorDescuento")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_descuento");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoriaId");
+
+                    b.ToTable("productos", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_producto_iva", "tarifa_iva >= 0 AND tarifa_iva <= 100");
+
+                            t.HasCheckConstraint("ck_producto_precio", "precio >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.SesionCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("AbiertaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("abierta_en");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<Guid>("CajeroId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cajero_id");
+
+                    b.Property<DateTimeOffset?>("CerradaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cerrada_en");
+
+                    b.Property<Guid?>("CerradaPorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cerrada_por_id");
+
+                    b.Property<bool>("CerradaSinConteo")
+                        .HasColumnType("boolean")
+                        .HasColumnName("cerrada_sin_conteo");
+
+                    b.Property<decimal?>("Contado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("contado");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<decimal?>("Diferencia")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("diferencia");
+
+                    b.Property<decimal?>("Esperado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("esperado");
+
+                    b.Property<decimal>("MontoInicial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("monto_inicial");
+
+                    b.Property<string>("MotivoCierreForzado")
+                        .HasColumnType("text")
+                        .HasColumnName("motivo_cierre_forzado");
+
+                    b.Property<string>("NombreCajero")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nombre_cajero");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CajeroId");
+
+                    b.HasIndex("SucursalId")
+                        .IsUnique()
+                        .HasFilter("cerrada_en IS NULL");
+
+                    b.ToTable("sesiones_caja", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_caja_inicial", "monto_inicial >= 0");
+
+                            t.HasCheckConstraint("ck_cierre_conteo", "(cerrada_en IS NULL AND NOT cerrada_sin_conteo AND contado IS NULL AND diferencia IS NULL AND esperado IS NULL) OR (cerrada_en IS NOT NULL AND esperado IS NOT NULL AND ((cerrada_sin_conteo AND contado IS NULL AND diferencia IS NULL AND motivo_cierre_forzado IS NOT NULL) OR (NOT cerrada_sin_conteo AND contado IS NOT NULL AND diferencia IS NOT NULL)))");
+                        });
+                });
+
             modelBuilder.Entity("Pollotikito.Domain.Usuario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -340,6 +813,174 @@ namespace Pollotikito.Infrastructure.Persistence.Migrations
                     b.ToTable("usuarios", (string)null);
                 });
 
+            modelBuilder.Entity("Pollotikito.Domain.Venta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("actualizado_en");
+
+                    b.Property<DateTimeOffset?>("AnuladaEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("anulada_en");
+
+                    b.Property<Guid?>("AnuladaPorId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("anulada_por_id");
+
+                    b.Property<decimal>("Base")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("base");
+
+                    b.Property<Guid>("CajeroId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("cajero_id");
+
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("creado_en");
+
+                    b.Property<decimal>("Descuento")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("descuento");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("estado");
+
+                    b.Property<DateTimeOffset>("Fecha")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("fecha");
+
+                    b.Property<decimal>("Impuesto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("impuesto");
+
+                    b.Property<string>("MotivoAnulacion")
+                        .HasColumnType("text")
+                        .HasColumnName("motivo_anulacion");
+
+                    b.Property<string>("MotivoDescuentoGlobal")
+                        .HasColumnType("text")
+                        .HasColumnName("motivo_descuento_global");
+
+                    b.Property<string>("NegocioCedula")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("negocio_cedula");
+
+                    b.Property<string>("NegocioCorreo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("negocio_correo");
+
+                    b.Property<string>("NegocioDireccion")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("negocio_direccion");
+
+                    b.Property<string>("NegocioLogo")
+                        .HasColumnType("text")
+                        .HasColumnName("negocio_logo");
+
+                    b.Property<string>("NegocioNombre")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("negocio_nombre");
+
+                    b.Property<string>("NegocioRazonSocial")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("negocio_razon_social");
+
+                    b.Property<string>("NegocioTelefono")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("negocio_telefono");
+
+                    b.Property<string>("NombreCajero")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("nombre_cajero");
+
+                    b.Property<long>("Numero")
+                        .HasColumnType("bigint")
+                        .HasColumnName("numero");
+
+                    b.Property<string>("PieTiquete")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("pie_tiquete");
+
+                    b.Property<string>("Prefijo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("prefijo");
+
+                    b.Property<Guid>("SesionCajaId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sesion_caja_id");
+
+                    b.Property<string>("SolicitudHash")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("solicitud_hash");
+
+                    b.Property<decimal>("Subtotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("subtotal");
+
+                    b.Property<Guid>("SucursalId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sucursal_id");
+
+                    b.Property<string>("TipoDescuentoGlobal")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tipo_descuento_global");
+
+                    b.Property<string>("TipoOrden")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("tipo_orden");
+
+                    b.Property<decimal>("Total")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("total");
+
+                    b.Property<decimal>("ValorDescuentoGlobal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("valor_descuento_global");
+
+                    b.Property<decimal>("Vuelto")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("numeric(18,2)")
+                        .HasColumnName("vuelto");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SesionCajaId");
+
+                    b.HasIndex("SucursalId", "Numero")
+                        .IsUnique();
+
+                    b.ToTable("ventas", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_venta_total", "total >= 0 AND base + impuesto = total AND subtotal - descuento = total");
+                        });
+                });
+
             modelBuilder.Entity("Pollotikito.Domain.AutorizacionAdministrador", b =>
                 {
                     b.HasOne("Pollotikito.Domain.Usuario", null)
@@ -353,6 +994,87 @@ namespace Pollotikito.Infrastructure.Persistence.Migrations
                         .HasForeignKey("SolicitanteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.ConteoDenominacion", b =>
+                {
+                    b.HasOne("Pollotikito.Domain.SesionCaja", null)
+                        .WithMany("Conteo")
+                        .HasForeignKey("SesionCajaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.LineaVenta", b =>
+                {
+                    b.HasOne("Pollotikito.Domain.Producto", null)
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Pollotikito.Domain.Venta", null)
+                        .WithMany("Lineas")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.MovimientoCaja", b =>
+                {
+                    b.HasOne("Pollotikito.Domain.SesionCaja", null)
+                        .WithMany()
+                        .HasForeignKey("SesionCajaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.PagoVenta", b =>
+                {
+                    b.HasOne("Pollotikito.Domain.Venta", null)
+                        .WithMany("Pagos")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.Producto", b =>
+                {
+                    b.HasOne("Pollotikito.Domain.Categoria", null)
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.SesionCaja", b =>
+                {
+                    b.HasOne("Pollotikito.Domain.Usuario", null)
+                        .WithMany()
+                        .HasForeignKey("CajeroId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.Venta", b =>
+                {
+                    b.HasOne("Pollotikito.Domain.SesionCaja", null)
+                        .WithMany()
+                        .HasForeignKey("SesionCajaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.SesionCaja", b =>
+                {
+                    b.Navigation("Conteo");
+                });
+
+            modelBuilder.Entity("Pollotikito.Domain.Venta", b =>
+                {
+                    b.Navigation("Lineas");
+
+                    b.Navigation("Pagos");
                 });
 #pragma warning restore 612, 618
         }
