@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Producto, LineaSolicitud } from "../comercio";
 import { moneda, sinDescuento } from "../comercio";
-import type { Menu, EleccionComponente } from "../menu";
+import type { Menu, EleccionComponente, Grupo } from "../menu";
 import { Campo } from "./ui";
 export function tieneElecciones(p: Producto, menu?: Menu) {
   return (
@@ -109,38 +109,16 @@ export function Personalizar({
           Elecciones por una unidad. Para elecciones distintas, agregá otra
           línea.
         </p>
-        {grupos.map((g) => (
-          <fieldset key={g.id}>
-            <legend>
-              {g.nombre} · {g.minimo > 0 ? "Obligatorio" : "Opcional"} (
-              {g.minimo}–{g.maximo})
-            </legend>
-            {g.opciones
-              .filter((o) => o.activo)
-              .sort((a, b) => a.orden - b.orden)
-              .map((o) => (
-                <label className="check" key={o.id}>
-                  <input
-                    type="checkbox"
-                    checked={mods.includes(o.id)}
-                    disabled={
-                      !mods.includes(o.id) &&
-                      g.opciones.filter((o) => mods.includes(o.id)).length >=
-                        g.maximo
-                    }
-                    onChange={(e) =>
-                      setMods(
-                        e.target.checked
-                          ? [...mods, o.id]
-                          : mods.filter((id) => id !== o.id),
-                      )
-                    }
-                  />
-                  {o.nombre} · +{moneda(o.precioAdicional)}
-                </label>
-              ))}
-          </fieldset>
-        ))}
+        {grupos
+          .filter((g) => g.minimo > 0)
+          .map((g) => (
+            <GrupoEleccion
+              key={g.id}
+              grupo={g}
+              seleccion={mods}
+              cambiar={setMods}
+            />
+          ))}
         {componentes.map((c) => (
           <fieldset key={c.id}>
             <legend>
@@ -186,6 +164,16 @@ export function Personalizar({
             )}
           </fieldset>
         ))}
+        {grupos
+          .filter((g) => g.minimo === 0)
+          .map((g) => (
+            <GrupoEleccion
+              key={g.id}
+              grupo={g}
+              seleccion={mods}
+              cambiar={setMods}
+            />
+          ))}
         <p className="total">
           Unitario antes de descuentos: {moneda(p.precio + extras)}
         </p>
@@ -200,6 +188,47 @@ export function Personalizar({
         </button>
       </form>
     </div>
+  );
+}
+function GrupoEleccion({
+  grupo: g,
+  seleccion: mods,
+  cambiar,
+}: {
+  grupo: Grupo;
+  seleccion: string[];
+  cambiar: (ids: string[]) => void;
+}) {
+  return (
+    <fieldset>
+      <legend>
+        {g.nombre} · {g.minimo > 0 ? "Obligatorio" : "Opcional"} ({g.minimo}–
+        {g.maximo})
+      </legend>
+      {g.opciones
+        .filter((o) => o.activo)
+        .sort((a, b) => a.orden - b.orden)
+        .map((o) => (
+          <label className="check" key={o.id}>
+            <input
+              type="checkbox"
+              checked={mods.includes(o.id)}
+              disabled={
+                !mods.includes(o.id) &&
+                g.opciones.filter((o) => mods.includes(o.id)).length >= g.maximo
+              }
+              onChange={(e) =>
+                cambiar(
+                  e.target.checked
+                    ? [...mods, o.id]
+                    : mods.filter((id) => id !== o.id),
+                )
+              }
+            />
+            {o.nombre} · +{moneda(o.precioAdicional)}
+          </label>
+        ))}
+    </fieldset>
   );
 }
 export function ResumenElecciones({

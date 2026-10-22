@@ -26,12 +26,17 @@ public sealed class MenuIntegracionTests(PostgresFixture f):IClassFixture<Postgr
         try
         {
             Assert.Equal(HttpStatusCode.Forbidden,(await cajero.GetAsync("/api/modificadores/grupos")).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden,(await cajero.GetAsync($"/api/productos/{combo.Id}/combo")).StatusCode);
+            Assert.Equal(HttpStatusCode.Forbidden,(await cajero.PutAsJsonAsync($"/api/productos/{combo.Id}/grupos-modificadores",Array.Empty<AsignarGrupo>())).StatusCode);
             var d=new CobrarVenta(Guid.CreateVersion7(),sesion.Id,TipoOrden.ComerAqui,[new(combo.Id,2,Modificadores:[opcion.Id],Componentes:[new(elegible.Id,bebida.Id,1)])],[new(MetodoPago.Efectivo,11800,12000)]);
             var v=await Leer<VentaDto>(await cajero.PostAsJsonAsync("/api/ventas",d));Assert.Equal(11800,v.Total);Assert.Equal(5900,Assert.Single(v.Lineas).PrecioUnitario);
             Assert.Equal(v.Id,(await Leer<VentaDto>(await cajero.PostAsJsonAsync("/api/ventas",d))).Id);
             Assert.Equal(HttpStatusCode.Conflict,(await cajero.PostAsJsonAsync("/api/ventas",d with{Lineas=[d.Lineas[0] with{Modificadores=[]}]})).StatusCode);
             (await admin.PutAsJsonAsync($"/api/modificadores/grupos/{g.Id}/opciones/{opcion.Id}",new DatosOpcion("Renombrado",900))).EnsureSuccessStatusCode();
+            Assert.Equal(HttpStatusCode.Conflict,(await cajero.PostAsJsonAsync("/api/ventas",d with{Lineas=[d.Lineas[0] with{Componentes=[new(elegible.Id,bebida.Id,2)]}]})).StatusCode);
+            (await admin.PutAsJsonAsync($"/api/productos/{combo.Id}/combo",new GuardarCombo(comps.Select(c=>new DatosComponente(c.Id,c.Nombre,c.Tipo,c.Cantidad,c.ProductoFijoId,c.Orden,c.Opciones.Where(o=>o.Activo).Select(o=>new DatosAlternativa(o.ProductoId,1000,o.Orden)).ToList())).ToList()))).EnsureSuccessStatusCode();
             var guardada=await Leer<VentaDto>(await cajero.GetAsync($"/api/ventas/{v.Id}"));Assert.Equal("Papas",Assert.Single(Assert.Single(guardada.Lineas).Modificadores).NombreOpcion);
+            Assert.Equal(5900,Assert.Single(guardada.Lineas).PrecioUnitario);Assert.Equal(600,Assert.Single(guardada.Lineas).Componentes.Single(c=>c.ProductoId==bebida.Id).RecargoUnitario);
             var reporte=await Leer<ReporteCaja>(await cajero.GetAsync($"/api/caja/{sesion.Id}/reporte"));Assert.Equal(2,Assert.Single(Assert.Single(reporte.DetalleVentas!).Lineas).Componentes.Count);
             (await admin.PostAsync($"/api/productos/{pollo.Id}/desactivar",null)).EnsureSuccessStatusCode();
             var catalogo=await Leer<CatalogoDto>(await cajero.GetAsync("/api/caja/catalogo"));Assert.DoesNotContain(catalogo.Productos,p=>p.Id==combo.Id);

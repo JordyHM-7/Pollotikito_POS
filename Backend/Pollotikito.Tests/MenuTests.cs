@@ -5,6 +5,23 @@ namespace Pollotikito.Tests;
 
 public sealed class MenuTests
 {
+    [Fact,Trait("Requerimiento","RF-CAT-05"),Trait("Requerimiento","RF-CAT-06")]
+    public void Precio_completo_combina_modificador_recargo_todos_los_descuentos_y_redondeos()
+    {
+        var(p,g,m)=Preparar();p.EsCombo=true;p.Precio=100.05m;p.TarifaIva=13;p.TipoDescuento=TipoDescuento.Porcentaje;p.ValorDescuento=10;g.Opciones[0].PrecioAdicional=.05m;
+        var bebida=new Producto();var c=new ComponenteCombo{ProductoId=p.Id,Tipo=TipoComponente.Elegible,Cantidad=1,Opciones=[new(){ProductoId=bebida.Id,Recargo=.05m}]};m.Componentes.Add(c);m=m with{ProductosComponentes=[bebida]};
+        var l=Assert.Single(CalculoVenta.Lineas([new(p.Id,3,Descuento:new(TipoDescuento.Porcentaje,7.5m,"Prueba"),Modificadores:[g.Opciones[0].Id],Componentes:[new(c.Id,bebida.Id,1)])],new Dictionary<Guid,Producto>{{p.Id,p}},new(TipoDescuento.Monto,.02m,"Prueba"),Ahora,m));
+        Assert.Equal(100.15m,l.PrecioUnitario);Assert.Equal(30.06m,l.DescuentoAutomatico);Assert.Equal(20.28m,l.DescuentoManual);Assert.Equal(.02m,l.DescuentoGlobal);Assert.Equal(250.09m,l.Total);Assert.Equal(221.32m,l.Base);Assert.Equal(28.77m,l.Impuesto);
+    }
+    [Fact,Trait("Requerimiento","RF-CAT-06")]
+    public void Rechaza_producto_ajeno_a_alternativas_y_alternativa_desactivada()
+    {
+        var p=new Producto{EsCombo=true};var bebida=new Producto();var otra=new Producto();var opcion=new OpcionComponenteCombo{ProductoId=bebida.Id};
+        var c=new ComponenteCombo{ProductoId=p.Id,Tipo=TipoComponente.Elegible,Opciones=[opcion]};var m=new DefinicionMenu([],[],[c],[bebida,otra]);
+        var ps=new Dictionary<Guid,Producto>{{p.Id,p}};
+        Assert.Throws<ErrorAplicacion>(()=>ReglasMenu.Elegir(new(p.Id,1,Componentes:[new(c.Id,otra.Id,1)]),p,ps,m));
+        opcion.Activo=false;Assert.Throws<ErrorAplicacion>(()=>ReglasMenu.Elegir(new(p.Id,1,Componentes:[new(c.Id,bebida.Id,1)]),p,ps,m));
+    }
     private static readonly DateTimeOffset Ahora=DateTimeOffset.UtcNow;
     private static (Producto P,GrupoModificador G,DefinicionMenu M) Preparar(int minimo=1,int maximo=1)
     {

@@ -17,6 +17,7 @@ export function ProductoMenu({
     [componentes, setComponentes] = useState<Componente[]>([]),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false),
+    [cargando, setCargando] = useState(true),
     [mensaje, setMensaje] = useState("");
   useEffect(() => {
     Promise.all([
@@ -29,7 +30,13 @@ export function ProductoMenu({
       .then(([g, a, c]) => {
         setGrupos(g);
         setAsignaciones(a.filter((a) => a.activo !== false));
-        setComponentes(c.map(componente=>({...componente,opciones:componente.opciones.filter(o=>o.activo!==false)})));
+        setComponentes(
+          c.map((componente) => ({
+            ...componente,
+            opciones: componente.opciones.filter((o) => o.activo !== false),
+          })),
+        );
+        setCargando(false);
       })
       .catch((e) => setError(e.message));
   }, [producto.id, producto.esCombo]);
@@ -64,7 +71,7 @@ export function ProductoMenu({
       }}
     >
       <h2>Elecciones de {producto.nombre}</h2>
-      <fieldset disabled={busy}>
+      <fieldset disabled={busy || cargando}>
         <h3>Grupos compartidos</h3>
         {grupos.map((g) => {
           const a = asignaciones.find((a) => a.grupoModificadorId === g.id);
