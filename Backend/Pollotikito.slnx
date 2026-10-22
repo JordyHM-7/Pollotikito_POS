@@ -2,6 +2,7 @@
   <Project Path="Pollotikito.Api/Pollotikito.Api.csproj" />
   <Project Path="Pollotikito.Application/Pollotikito.Application.csproj" />
   <Project Path="Pollotikito.Domain/Pollotikito.Domain.csproj" />
+  <Project Path="Pollotikito.Demo/Pollotikito.Demo.csproj" />
   <Project Path="Pollotikito.Infrastructure/Pollotikito.Infrastructure.csproj" />
   <Project Path="Pollotikito.Tests/Pollotikito.Tests.csproj" />
 </Solution>
