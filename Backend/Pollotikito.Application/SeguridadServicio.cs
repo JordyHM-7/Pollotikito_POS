@@ -23,7 +23,7 @@ public sealed class SeguridadServicio(IAlmacen db, ISecretos secretos, IContexto
     {
         Validacion.Pin(datos.Pin);
         // Lista explícita: agregar acciones junto con sus endpoints protegidos.
-        Validacion.Exigir(datos.Accion == "prueba", "Acción no autorizable.");
+        Validacion.Exigir(datos.Accion is "prueba" or "retiro_efectivo", "Acción no autorizable.");
         var resultado = await db.Transaccion(async () =>
         {
             var admin = await db.Usuario(datos.AdministradorId);

@@ -34,7 +34,10 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         { c.RejectPrincipal(); await c.HttpContext.SignOutAsync(); }
     };
 });
-builder.Services.AddAuthorization(o => o.AddPolicy("Administrador", p => p.RequireRole(nameof(Rol.Administrador))));
+builder.Services.AddAuthorization(o => {
+    o.AddPolicy("Administrador", p => p.RequireRole(nameof(Rol.Administrador)));
+    o.AddPolicy("Cajero", p => p.RequireRole(nameof(Rol.Cajero)));
+});
 var app = builder.Build();
 app.Use(async (http, next) =>
 {
@@ -110,6 +113,7 @@ admin.MapGet("/configuracion/logo", async (ConfiguracionServicio s, IConfigurati
 app.MapPost("/api/autorizaciones/administrador", (PedirAutorizacion d, SeguridadServicio s) => s.Autorizar(d)).RequireAuthorization();
 app.MapPost("/api/pruebas/autorizacion-administrador", () => Results.Ok(new { autorizado = true }))
     .RequireAuthorization().AddEndpointFilter(new AutorizacionAdministradorFiltro("prueba"));
+EndpointsComercio.Mapear(app);
 app.MapMethods("/api/{**path}", ["GET", "POST", "PUT", "DELETE", "PATCH"], () => Results.NotFound());
 app.MapFallbackToFile("index.html");
 if (!app.Environment.IsEnvironment("Testing")) await RegistroServicios.Inicializar(app.Services, app.Configuration, app.Environment.IsDevelopment());
