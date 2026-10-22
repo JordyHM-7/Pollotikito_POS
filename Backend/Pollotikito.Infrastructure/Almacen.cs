@@ -32,7 +32,14 @@ public sealed class Almacen(PollotikitoDbContext db, IContextoActual contexto, T
                 u.ActualizadoEn <= x.CreadoEn))
             .ExecuteUpdateAsync(s => s.SetProperty(x => x.ConsumidaEn, ahora).SetProperty(x => x.ActualizadoEn, ahora)) == 1;
 
-    public Task<NumeroDocumento> Siguiente(TipoDocumento tipo) => Transaccion(async () =>
+    public async Task<NumeroDocumento> Siguiente(TipoDocumento tipo)
+    {
+        // Participa en el cobro si ya hay transacción. Nunca toma el bloqueo asesor global.
+        if (db.Database.CurrentTransaction != null) return await AsignarNumero(tipo);
+        await using var tx = await db.Database.BeginTransactionAsync();
+        var numero = await AsignarNumero(tipo); await tx.CommitAsync(); return numero;
+    }
+    private async Task<NumeroDocumento> AsignarNumero(TipoDocumento tipo)
     {
         Validacion.Tipo(tipo);
         var tipoTexto = tipo.ToString(); var ahora = reloj.GetUtcNow(); var sucursal = contexto.SucursalId;
@@ -44,6 +51,6 @@ public sealed class Almacen(PollotikitoDbContext db, IContextoActual contexto, T
             """).ToListAsync();
         Validacion.Exigir(filas.Count == 1, "Consecutivo no disponible o agotado.", 409);
         return new NumeroDocumento(filas[0].Prefijo, filas[0].Numero);
-    });
+    }
     private sealed class NumeroFila { public string Prefijo { get; set; } = ""; public long Numero { get; set; } }
 }

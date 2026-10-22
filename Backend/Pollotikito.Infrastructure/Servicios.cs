@@ -35,6 +35,8 @@ public static class RegistroServicios
         s.AddScoped<IConsecutivos>(p => p.GetRequiredService<Almacen>());
         s.AddSingleton<ISecretos, Secretos>(); s.AddScoped<ILogoLocal, LogoLocal>();
         s.AddScoped<UsuariosServicio>(); s.AddScoped<SeguridadServicio>(); s.AddScoped<ConfiguracionServicio>();
+        s.AddScoped<IComercio, ComercioAlmacen>(); s.AddScoped<IFotosProductos, FotosProductos>();
+        s.AddScoped<CatalogoServicio>(); s.AddScoped<CajaServicio>(); s.AddScoped<VentasServicio>();
         return s;
     }
 
