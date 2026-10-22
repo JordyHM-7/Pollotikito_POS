@@ -5,7 +5,11 @@ import type { Usuario } from "./api";
 import { Login, CambioPassword } from "./components/Login";
 import { Usuarios } from "./components/Usuarios";
 import { Negocio } from "./components/Negocio";
+import { CatalogoAdmin } from "./components/Catalogo";
+import { Caja } from "./components/Caja";
+import { SesionesAdmin } from "./components/Comprobantes";
 import "./style.css";
+import "./caja.css";
 function App() {
   const [usuario, setUsuario] = useState<Usuario | null>(null),
     [cargando, setCargando] = useState(true),
@@ -54,12 +58,22 @@ function App() {
         ) : usuario.debeCambiarCredenciales ? (
           <CambioPassword entrar={entrar} />
         ) : usuario.rol === "Cajero" ? (
-          <section>
-            <h1>Caja (próximamente)</h1>
-          </section>
+          <Caja />
         ) : (
           <>
             <nav aria-label="Administración">
+              <button
+                className={vista === "catalogo" ? "elegido" : ""}
+                onClick={() => setVista("catalogo")}
+              >
+                Catálogo
+              </button>
+              <button
+                className={vista === "cajas" ? "elegido" : ""}
+                onClick={() => setVista("cajas")}
+              >
+                Sesiones de caja
+              </button>
               <button
                 className={vista === "usuarios" ? "elegido" : ""}
                 onClick={() => setVista("usuarios")}
@@ -73,7 +87,15 @@ function App() {
                 Negocio y consecutivos
               </button>
             </nav>
-            {vista === "usuarios" ? <Usuarios actual={usuario} /> : <Negocio />}
+            {vista === "usuarios" ? (
+              <Usuarios actual={usuario} />
+            ) : vista === "configuracion" ? (
+              <Negocio />
+            ) : vista === "catalogo" ? (
+              <CatalogoAdmin />
+            ) : (
+              <SesionesAdmin />
+            )}
           </>
         )}
       </main>

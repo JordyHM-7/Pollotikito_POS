@@ -1,0 +1,294 @@
+.caja {
+  padding: 20px;
+}
+.venta-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(330px, 1fr);
+  gap: 24px;
+}
+.catalogo-venta nav {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  padding: 8px 0;
+  z-index: 1;
+}
+.productos-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+  gap: 14px;
+}
+.boton-producto {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  min-height: 150px;
+  padding: 12px;
+}
+.boton-producto img {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+.boton-producto strong {
+  font-size: 1.1rem;
+}
+.boton-producto span {
+  font-weight: 600;
+}
+.foto-producto {
+  max-width: 180px;
+  max-height: 120px;
+  object-fit: contain;
+}
+.orden {
+  border-left: 1px solid #dce1e5;
+  padding-left: 22px;
+}
+.linea-orden {
+  padding: 14px;
+  margin: 10px 0;
+}
+.linea-orden label {
+  margin-bottom: 12px;
+}
+.fila {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cantidad {
+  align-items: center;
+  margin: 14px 0;
+}
+.cantidad span {
+  font-size: 1.25rem;
+  min-width: 25px;
+  text-align: center;
+}
+.cantidad button {
+  min-width: 50px;
+}
+.descuento-campos {
+  display: grid;
+  gap: 0 10px;
+  grid-template-columns: 1fr 1fr;
+}
+.descuento-campos label:last-child {
+  grid-column: 1 / -1;
+}
+.total {
+  font-size: 1.9rem;
+  font-weight: 750;
+  margin: 20px 0;
+}
+.cobrar {
+  width: 100%;
+  min-height: 62px;
+  font-size: 1.3rem;
+}
+.modal-fondo {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: #15202bb8;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal {
+  background: #fff;
+  padding: 28px;
+  border-radius: 12px;
+  width: min(100%, 660px);
+  max-height: 95vh;
+  overflow-y: auto;
+  box-shadow: 0 15px 60px #0005;
+}
+.modal h2 {
+  margin-top: 0;
+}
+.billetes {
+  margin: 14px 0;
+}
+.aviso {
+  background: #fff7df;
+  border: 1px solid #d9b85d;
+  padding: 14px;
+  border-radius: 6px;
+}
+.conteo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0 18px;
+}
+dl {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px 20px;
+}
+dt,
+dd {
+  margin: 0;
+}
+.tiquete {
+  width: 74mm;
+  max-width: 100%;
+  margin: 24px auto;
+  color: #111;
+  font-size: 12px;
+}
+.tiquete h1 {
+  font-size: 20px;
+  margin: 12px 0;
+}
+.tiquete h2 {
+  font-size: 16px;
+  margin: 12px 0;
+}
+.tiquete h3 {
+  font-size: 13px;
+}
+.tiquete p {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  margin: 7px 0;
+}
+.tiquete img {
+  display: block;
+  margin: 12px auto;
+}
+.linea-tiquete {
+  border-top: 1px dashed #777;
+  padding: 10px 0;
+  break-inside: avoid;
+}
+.linea-tiquete .fila {
+  align-items: flex-start;
+}
+.linea-tiquete strong:last-child {
+  white-space: nowrap;
+}
+.pie-tiquete {
+  text-align: center;
+  padding-top: 16px;
+}
+.anulada {
+  font-weight: 750;
+  border: 2px solid #a32c20;
+  padding: 10px;
+}
+.reporte-carta {
+  max-width: 190mm;
+  margin: 24px auto;
+  font-size: 14px;
+}
+.reporte-carta td,
+.reporte-carta th {
+  padding: 9px 7px;
+}
+.reporte-carta p {
+  overflow-wrap: anywhere;
+}
+.reporte-carta dl {
+  margin: 24px 0;
+}
+.imprimible table {
+  break-inside: auto;
+}
+.imprimible tr {
+  break-inside: avoid;
+}
+@media (max-width: 900px) {
+  .venta-layout {
+    grid-template-columns: 1fr;
+  }
+  .orden {
+    border-left: 0;
+    border-top: 1px solid #dce1e5;
+    padding: 18px 0 0;
+  }
+  .productos-grid {
+    grid-template-columns: repeat(auto-fill, minmax(125px, 1fr));
+  }
+  .modal-fondo {
+    padding: 10px;
+  }
+  .modal {
+    padding: 20px;
+  }
+  .total {
+    font-size: 1.6rem;
+  }
+}
+@page tiquete {
+  size: 80mm 297mm;
+  margin: 3mm;
+}
+@page reporte {
+  size: letter portrait;
+  margin: 12mm;
+}
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  #root > header,
+  main > nav,
+  .no-imprimir {
+    display: none !important;
+  }
+  main {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+  section {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: #fff;
+  }
+  .tiquete {
+    page: tiquete;
+    width: 74mm;
+    margin: 0;
+    font-size: 10pt;
+  }
+  .tiquete h1 {
+    font-size: 15pt;
+  }
+  .reporte-carta {
+    page: reporte;
+    max-width: none;
+    margin: 0;
+    font-size: 10pt;
+  }
+  .imprimible table {
+    width: 100%;
+  }
+  .imprimible th {
+    background: none;
+  }
+  .anulada {
+    border-color: #000;
+  }
+  button {
+    display: none !important;
+  }
+  .imprimible h1,
+  .imprimible h2,
+  .imprimible h3 {
+    break-after: avoid;
+  }
+  .imprimible p {
+    orphans: 2;
+    widows: 2;
+  }
+}

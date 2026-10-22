@@ -23,7 +23,7 @@ public static class EndpointsComercio
 
         var cajero = app.MapGroup("/api").RequireAuthorization("Cajero");
         cajero.MapGet("/caja/catalogo", (CatalogoServicio s) => s.Caja());
-        cajero.MapGet("/caja/actual", async (CajaServicio s) => Results.Ok(await s.Actual()));
+        cajero.MapGet("/caja/actual", async (CajaServicio s) => new { sesion = await s.Actual() });
         cajero.MapGet("/caja/administradores", async (UsuariosServicio s) => (await s.Listar()).Where(u => u.Activo && u.Rol == Rol.Administrador && u.TienePin && !u.DebeCambiarCredenciales).Select(u => new { u.Id, u.Nombre }));
         cajero.MapPost("/caja/abrir", (AbrirCaja d, CajaServicio s) => s.Abrir(d));
         cajero.MapPost("/caja/{id:guid}/depositos", (Guid id, DatosMovimiento d, CajaServicio s) => s.Movimiento(id, d, TipoMovimiento.Deposito));
