@@ -1,5 +1,7 @@
 # Manual de Pollotikito
 
+[Descargar el manual completo en Word](Pollotikito%20Manual%20de%20usuario.docx)
+
 Pollotikito funciona en el equipo del restaurante, sin internet. Necesita que la aplicación y su base local estén encendidas. Los ejemplos muestran **Pollotikito Demo**, un negocio ficticio, con montos en colones.
 
 1. [Primeros pasos e ingreso](primeros-pasos.md)
