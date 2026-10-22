@@ -35,7 +35,7 @@ public sealed class ApiPrueba(string conexion, RelojPrueba reloj, string logos) 
     {
         builder.UseEnvironment("Testing");
         builder.ConfigureAppConfiguration((_, c) => c.AddInMemoryCollection(new Dictionary<string, string?> {
-            ["ConnectionStrings:Pollotikito"] = conexion, ["AllowedHosts"] = "*", ["Almacenamiento:Logos"] = logos }));
+            ["ConnectionStrings:Pollotikito"] = conexion, ["AllowedHosts"] = "*", ["Almacenamiento:Logos"] = logos, ["Almacenamiento:FotosProductos"] = Path.Combine(logos,"productos") }));
         builder.ConfigureServices(s =>
         {
             s.RemoveAll<DbContextOptions<PollotikitoDbContext>>();
