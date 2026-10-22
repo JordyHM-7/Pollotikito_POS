@@ -61,6 +61,15 @@ dotnet run --project Backend/Pollotikito.Api --launch-profile http
 
 La API escucha en `http://localhost:5149`. Al arrancar en Development aplica las migraciones versionadas, crea la configuración y los tres consecutivos, y crea el administrador inicial **solo si nunca se creó uno**. El administrador inicia con `DebeCambiarCredenciales=true`; la API restringe su sesión hasta que cambie la contraseña. Después del primer arranque se puede retirar la variable con la contraseña inicial.
 
+Para que la conexión de desarrollo se conserve al cerrar la terminal, el proyecto tiene habilitado **.NET User Secrets**. Configurarla una vez por perfil, fuera del repositorio:
+
+```powershell
+dotnet user-secrets set "ConnectionStrings:Pollotikito" "Host=localhost;Port=5432;Database=pollotikito;Username=pollotikito;Password=REEMPLAZAR_CLAVE_LOCAL" --project Backend/Pollotikito.Api
+dotnet run --project Backend/Pollotikito.Api --launch-profile http
+```
+
+En Development la API lee esa conexión automáticamente; una variable `ConnectionStrings__Pollotikito` tiene prioridad si está definida. User Secrets solo configura el acceso de la API a PostgreSQL: no cambia la contraseña ni el PIN de usuarios de Pollotikito. Los comandos `dotnet ef` de Infrastructure siguen usando `ConnectionStrings__Pollotikito`; el arranque de desarrollo ya aplica las migraciones con la configuración de la API.
+
 El valor inicial de IVA es 13 %. Los siguientes números parten en 1 y los prefijos vacíos. Todos los IDs de entidades usan UUID v7; la venta se identifica con un UUID v7 generado por el frontend. Todas las tablas de negocio incluyen `sucursal_id`, `creado_en` y `actualizado_en` en UTC. Los importes monetarios se almacenan en CRC como `decimal` / `numeric(18,2)`.
 
 ## Ejecutar el frontend en desarrollo
