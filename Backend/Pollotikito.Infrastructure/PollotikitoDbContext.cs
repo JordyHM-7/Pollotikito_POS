@@ -39,6 +39,7 @@ public sealed class PollotikitoDbContext(DbContextOptions<PollotikitoDbContext> 
         b.Entity<AutorizacionAdministrador>().HasOne<Usuario>().WithMany().HasForeignKey(x => x.AdministradorId).OnDelete(DeleteBehavior.Restrict);
         b.Entity<AutorizacionAdministrador>().HasOne<Usuario>().WithMany().HasForeignKey(x => x.SolicitanteId).OnDelete(DeleteBehavior.Restrict);
         ModeloComercio.Configurar(b);
+        ModeloMenu.Configurar(b);
         foreach (var e in b.Model.GetEntityTypes())
         {
             e.SetTableName(Snake(e.GetTableName()!));
@@ -57,11 +58,11 @@ public sealed class PollotikitoDbContext(DbContextOptions<PollotikitoDbContext> 
             if (e.Entity is Usuario or Producto or Categoria && e.State == EntityState.Deleted) throw new InvalidOperationException("Los registros solo se desactivan.");
             if (e.State == EntityState.Added) e.Entity.CreadoEn = ahora;
             e.Entity.ActualizadoEn = ahora;
-            if (e.Entity is not (Usuario or ConfiguracionNegocio or Consecutivo or Categoria or Producto)) continue;
+            if (e.Entity is not (Usuario or ConfiguracionNegocio or Consecutivo or Categoria or Producto or GrupoModificador or OpcionModificador or ProductoGrupoModificador or ComponenteCombo or OpcionComponenteCombo)) continue;
             if (e.State == EntityState.Modified && !e.Properties.Any(p => p.IsModified && p.Metadata.Name is not (nameof(Usuario.IntentosFallidos) or nameof(Usuario.BloqueadoHasta) or nameof(Entidad.ActualizadoEn)))) continue;
             var credenciales = e.Entity is Usuario && e.Properties.Any(p => p.IsModified && p.Metadata.Name is nameof(Usuario.PinHash) or nameof(Usuario.PasswordHash));
             Bitacoras.Add(new Bitacora { SucursalId = e.Entity.SucursalId, UsuarioId = contexto.UsuarioId, Ip = contexto.Ip,
-                Accion = e.State == EntityState.Added ? "Crear" : credenciales ? "CambiarCredenciales" : "Editar",
+                Accion = e.State == EntityState.Added ? "Crear" : e.State == EntityState.Deleted ? "EliminarAsignacion" : credenciales ? "CambiarCredenciales" : "Editar",
                 NombreEntidad = e.Entity.GetType().Name, EntidadId = e.Entity.Id, FechaUtc = ahora, CreadoEn = ahora, ActualizadoEn = ahora,
                 ValorAnterior = e.State == EntityState.Added ? null : Snapshot(e, true), ValorNuevo = Snapshot(e, false) });
         }

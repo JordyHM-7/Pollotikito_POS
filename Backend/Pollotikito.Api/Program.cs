@@ -114,6 +114,7 @@ app.MapPost("/api/autorizaciones/administrador", (PedirAutorizacion d, Seguridad
 app.MapPost("/api/pruebas/autorizacion-administrador", () => Results.Ok(new { autorizado = true }))
     .RequireAuthorization().AddEndpointFilter(new AutorizacionAdministradorFiltro("prueba"));
 EndpointsComercio.Mapear(app);
+EndpointsMenu.Mapear(app);
 app.MapMethods("/api/{**path}", ["GET", "POST", "PUT", "DELETE", "PATCH"], () => Results.NotFound());
 app.MapFallbackToFile("index.html");
 if (!app.Environment.IsEnvironment("Testing")) await RegistroServicios.Inicializar(app.Services, app.Configuration, app.Environment.IsDevelopment());

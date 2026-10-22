@@ -29,7 +29,7 @@ public static class CalculoVenta
     }
 
     public static List<LineaVenta> Lineas(List<LineaSolicitud> solicitudes, IReadOnlyDictionary<Guid, Producto> productos,
-        DescuentoSolicitud? global, DateTimeOffset ahora)
+        DescuentoSolicitud? global, DateTimeOffset ahora, DefinicionMenu? menu = null)
     {
         Validacion.Exigir(solicitudes is { Count: > 0 and <= 200 }, "La venta debe tener entre 1 y 200 líneas.");
         var lineas = new List<LineaVenta>();
@@ -38,15 +38,19 @@ public static class CalculoVenta
             Validacion.Exigir(s != null && productos.ContainsKey(s.ProductoId), "Producto no disponible.");
             var p = productos[s!.ProductoId];
             Validacion.Exigir(s.Cantidad is > 0 and <= 9999, "Cantidad inválida.");
-            var bruto = p.Precio * s.Cantidad; Dinero(bruto, "Subtotal");
+            Validacion.Exigir(p.Disponible,"Producto no disponible.");
+            var elecciones=ReglasMenu.Elegir(s,p,productos,menu);
+            var precio=p.Precio+elecciones.Adicional;Dinero(precio,"Precio unitario completo");
+            var bruto = precio * s.Cantidad; Dinero(bruto, "Subtotal");
             var vigente = (p.DescuentoDesde == null || ahora >= p.DescuentoDesde) && (p.DescuentoHasta == null || ahora <= p.DescuentoHasta);
             var porUnidad = !vigente ? 0 : p.TipoDescuento switch {
-                TipoDescuento.Porcentaje => Redondear(p.Precio * p.ValorDescuento / 100m),
-                TipoDescuento.Monto => Math.Min(p.Precio, p.ValorDescuento), _ => 0 };
+                TipoDescuento.Porcentaje => Redondear(precio * p.ValorDescuento / 100m),
+                TipoDescuento.Monto => Math.Min(precio, p.ValorDescuento), _ => 0 };
             var automatico = porUnidad * s.Cantidad;
             var manual = Manual(bruto - automatico, s.Descuento);
             lineas.Add(new LineaVenta { ProductoId = p.Id, Orden = lineas.Count, Nombre = p.Nombre, Cantidad = s.Cantidad,
-                Nota = Validacion.Texto(s.Nota, "Nota", 500), PrecioUnitario = p.Precio, TarifaIva = p.TarifaIva,
+                Nota = Validacion.Texto(s.Nota, "Nota", 500), PrecioUnitario = precio, TarifaIva = p.TarifaIva,
+                Modificadores=elecciones.Modificadores,Componentes=elecciones.Componentes,
                 DescuentoAutomatico = automatico, DescuentoManual = manual, TipoDescuentoManual = s.Descuento?.Tipo ?? TipoDescuento.Ninguno,
                 ValorDescuentoManual = s.Descuento?.Valor ?? 0, MotivoDescuento = s.Descuento?.Motivo?.Trim(), Total = bruto - automatico - manual });
         }
@@ -63,6 +67,8 @@ public static class CalculoVenta
         }
         foreach (var l in lineas)
         {
+            foreach(var m in l.Modificadores)m.LineaVentaId=l.Id;
+            foreach(var c in l.Componentes)c.LineaVentaId=l.Id;
             l.Total -= l.DescuentoGlobal;
             l.Base = Redondear(l.Total / (1m + l.TarifaIva / 100m)); l.Impuesto = l.Total - l.Base;
         }

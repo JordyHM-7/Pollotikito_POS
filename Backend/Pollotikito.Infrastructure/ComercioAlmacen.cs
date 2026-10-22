@@ -30,10 +30,10 @@ public sealed class ComercioAlmacen(PollotikitoDbContext db, IContextoActual con
     public Task<List<SesionCaja>> Sesiones() => db.Set<SesionCaja>().AsNoTracking().Include(s => s.Conteo).Where(x => x.SucursalId == contexto.SucursalId).OrderByDescending(x => x.AbiertaEn).ToListAsync();
     public Task<Venta?> Venta(Guid id, bool seguir = false)
     {
-        var q = db.Set<Venta>().Include(x => x.Lineas).Include(x => x.Pagos).AsSplitQuery().Where(x => x.Id == id && x.SucursalId == contexto.SucursalId);
+        var q = db.Set<Venta>().Include(x => x.Lineas).ThenInclude(l=>l.Modificadores).Include(x=>x.Lineas).ThenInclude(l=>l.Componentes).Include(x => x.Pagos).AsSplitQuery().Where(x => x.Id == id && x.SucursalId == contexto.SucursalId);
         return (seguir ? q : q.AsNoTracking()).SingleOrDefaultAsync();
     }
-    public Task<List<Venta>> Ventas(Guid id) => db.Set<Venta>().AsNoTracking().Include(x => x.Lineas).Include(x => x.Pagos).AsSplitQuery()
+    public Task<List<Venta>> Ventas(Guid id) => db.Set<Venta>().AsNoTracking().Include(x => x.Lineas).ThenInclude(l=>l.Modificadores).Include(x=>x.Lineas).ThenInclude(l=>l.Componentes).Include(x => x.Pagos).AsSplitQuery()
         .Where(x => x.SesionCajaId == id && x.SucursalId == contexto.SucursalId).OrderByDescending(x => x.Numero).ToListAsync();
     public Task<List<MovimientoCaja>> Movimientos(Guid id) => db.Set<MovimientoCaja>().AsNoTracking().Where(x => x.SesionCajaId == id && x.SucursalId == contexto.SucursalId).OrderBy(x => x.Fecha).ToListAsync();
     public void Agregar(Entidad e) => db.Add(e);

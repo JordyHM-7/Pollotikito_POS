@@ -1076,6 +1076,7 @@ namespace Pollotikito.Infrastructure.Persistence.Migrations
 
                     b.Navigation("Pagos");
                 });
+            AgregarMenuIncremento3(modelBuilder);
 #pragma warning restore 612, 618
         }
     }

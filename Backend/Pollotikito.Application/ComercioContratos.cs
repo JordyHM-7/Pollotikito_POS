@@ -27,10 +27,11 @@ public interface IFotosProductos
 public sealed record DatosCategoria(string Nombre, int Orden, bool Activo = true);
 public sealed record DatosProducto(Guid CategoriaId, string Nombre, decimal Precio, decimal? TarifaIva, int Orden,
     bool Activo = true, TipoDescuento TipoDescuento = TipoDescuento.Ninguno, decimal ValorDescuento = 0,
-    DateTimeOffset? DescuentoDesde = null, DateTimeOffset? DescuentoHasta = null);
-public sealed record CatalogoDto(List<Categoria> Categorias, List<Producto> Productos);
+    DateTimeOffset? DescuentoDesde = null, DateTimeOffset? DescuentoHasta = null, bool EsCombo = false);
+public sealed record CatalogoDto(List<Categoria> Categorias, List<Producto> Productos, DefinicionMenu? Menu = null);
 public sealed record DescuentoSolicitud(TipoDescuento Tipo = TipoDescuento.Ninguno, decimal Valor = 0, string? Motivo = null);
-public sealed record LineaSolicitud(Guid ProductoId, int Cantidad, string? Nota = null, DescuentoSolicitud? Descuento = null);
+public sealed record LineaSolicitud(Guid ProductoId, int Cantidad, string? Nota = null, DescuentoSolicitud? Descuento = null,
+    List<Guid>? Modificadores = null, List<EleccionComponente>? Componentes = null);
 public sealed record PagoSolicitud(MetodoPago Metodo, decimal Monto, decimal? Recibido = null, string? Referencia = null);
 public sealed record CobrarVenta(Guid Id, Guid SesionCajaId, TipoOrden TipoOrden, List<LineaSolicitud> Lineas,
     List<PagoSolicitud> Pagos, DescuentoSolicitud? Descuento = null);
@@ -43,7 +44,7 @@ public sealed record AnularVenta(string Motivo);
 public sealed record ResumenMetodo(MetodoPago Metodo, int Cantidad, decimal Monto);
 public sealed record ReporteCaja(SesionCaja Sesion, List<ResumenMetodo> VentasPorMetodo, List<ResumenMetodo> AnulacionesPorMetodo,
     int CantidadVentas, decimal TotalVentas, int CantidadAnulaciones, decimal TotalAnulaciones, decimal TotalDescuentos,
-    decimal Depositos, decimal Retiros, decimal Esperado, decimal? Contado, decimal? Diferencia, List<MovimientoCaja> Movimientos);
+    decimal Depositos, decimal Retiros, decimal Esperado, decimal? Contado, decimal? Diferencia, List<MovimientoCaja> Movimientos, List<VentaDto>? DetalleVentas = null);
 
 // DTO explícito: la huella de idempotencia queda dentro de la persistencia.
 public sealed record VentaDto(Guid Id, Guid SesionCajaId, string NombreCajero, string Prefijo, long Numero,

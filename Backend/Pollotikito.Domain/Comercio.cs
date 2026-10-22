@@ -15,6 +15,9 @@ public sealed class Categoria : Entidad
 
 public sealed class Producto : Entidad
 {
+    public bool EsCombo { get; set; }
+    public bool Disponible { get; set; } = true;
+    public List<string> Advertencias { get; set; } = [];
     public Guid CategoriaId { get; set; }
     public string Nombre { get; set; } = "";
     public decimal Precio { get; set; }
@@ -99,6 +102,8 @@ public sealed class Venta : Entidad
 
 public sealed class LineaVenta : Entidad
 {
+    public List<ModificadorLineaVenta> Modificadores { get; set; } = [];
+    public List<ComponenteLineaVenta> Componentes { get; set; } = [];
     public Guid VentaId { get; set; }
     public Guid ProductoId { get; set; }
     public int Orden { get; set; }

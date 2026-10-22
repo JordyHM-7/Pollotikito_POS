@@ -12,8 +12,9 @@ public sealed class VentasServicio(IComercio db, IAlmacen administracion, IConse
     public async Task<VentaDto> Cotizar(CotizarVenta datos)
     {
         Validacion.Exigir(Enum.IsDefined(datos.TipoOrden), "Tipo de orden inválido.");
-        var productos = (await catalogo.Caja()).Productos.ToDictionary(p => p.Id);
-        var v = new Venta { TipoOrden = datos.TipoOrden, Lineas = CalculoVenta.Lineas(datos.Lineas, productos, datos.Descuento, reloj.GetUtcNow()) };
+        var disponibles = await catalogo.Caja();
+        var productos = disponibles.Productos.ToDictionary(p => p.Id);
+        var v = new Venta { TipoOrden = datos.TipoOrden, Lineas = CalculoVenta.Lineas(datos.Lineas, productos, datos.Descuento, reloj.GetUtcNow(),disponibles.Menu) };
         Totales(v); return VentaDto.De(v);
     }
     public Task<VentaDto> Cobrar(CobrarVenta datos) => db.Transaccion(async () =>
@@ -27,7 +28,7 @@ public sealed class VentasServicio(IComercio db, IAlmacen administracion, IConse
         var sesion = await caja.PropiaAbierta(datos.SesionCajaId);
         previa = await db.Venta(datos.Id);
         if (previa != null) return await Reintento(previa, huella);
-        var productos = (await catalogo.Caja()).Productos.ToDictionary(p => p.Id);
+        var disponibles = await catalogo.Caja();var productos = disponibles.Productos.ToDictionary(p => p.Id);
         var ahora = reloj.GetUtcNow(); var negocio = await administracion.Configuracion();
         var v = new Venta { Id = datos.Id, SucursalId = contexto.SucursalId, SesionCajaId = sesion.Id, CajeroId = sesion.CajeroId,
             NombreCajero = sesion.NombreCajero, SolicitudHash = huella, Fecha = ahora, TipoOrden = datos.TipoOrden,
@@ -35,10 +36,13 @@ public sealed class VentasServicio(IComercio db, IAlmacen administracion, IConse
             MotivoDescuentoGlobal = datos.Descuento?.Motivo?.Trim(), NegocioNombre = negocio.NombreComercial, NegocioRazonSocial = negocio.RazonSocial,
             NegocioCedula = negocio.Cedula, NegocioTelefono = negocio.Telefono, NegocioCorreo = negocio.Correo,
             NegocioDireccion = negocio.Direccion, NegocioLogo = negocio.Logo, PieTiquete = negocio.PieTiquete,
-            Lineas = CalculoVenta.Lineas(datos.Lineas, productos, datos.Descuento, ahora) };
+            Lineas = CalculoVenta.Lineas(datos.Lineas, productos, datos.Descuento, ahora,disponibles.Menu) };
         Totales(v); v.Pagos = CalculoVenta.Pagos(datos.Pagos, v.Total); v.Vuelto = v.Pagos.Sum(p => p.Vuelto);
         var numero = await consecutivos.Siguiente(TipoDocumento.TIQUETE); v.Prefijo = numero.Prefijo; v.Numero = numero.Numero;
-        foreach (var l in v.Lineas) { l.SucursalId = contexto.SucursalId; l.VentaId = v.Id; }
+        foreach (var l in v.Lineas) { l.SucursalId = contexto.SucursalId; l.VentaId = v.Id;
+            foreach(var m in l.Modificadores)m.SucursalId=contexto.SucursalId;
+            foreach(var c in l.Componentes)c.SucursalId=contexto.SucursalId;
+        }
         foreach (var p in v.Pagos) { p.SucursalId = contexto.SucursalId; p.VentaId = v.Id; }
         db.Agregar(v);
         if (v.Lineas.Any(l => l.DescuentoManual > 0 || l.DescuentoGlobal > 0))
@@ -91,6 +95,10 @@ public sealed class VentasServicio(IComercio db, IAlmacen administracion, IConse
         static object D(DescuentoSolicitud? x) => new { Tipo = x?.Tipo ?? TipoDescuento.Ninguno, Valor = N(x?.Valor ?? 0), Motivo = x?.Motivo ?? "" };
         var canonico = new { d.SesionCajaId, d.TipoOrden, Lineas = d.Lineas.Select(l => new { l.ProductoId, l.Cantidad, Nota = l.Nota ?? "", Descuento = D(l.Descuento) }),
             Pagos = d.Pagos.Select(p => new { p.Metodo, Monto = N(p.Monto), Recibido = p.Recibido.HasValue ? N(p.Recibido.Value) : null, Referencia = p.Referencia ?? "" }), Descuento = D(d.Descuento) };
-        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(canonico))));
+        // Conservar la huella histórica para solicitudes del Incremento 2 sin elecciones.
+        var serializado = d.Lineas.All(l=>(l.Modificadores?.Count??0)==0&&(l.Componentes?.Count??0)==0) ? JsonSerializer.Serialize(canonico) :
+            JsonSerializer.Serialize(new { Solicitud=canonico, Elecciones=d.Lineas.Select(l=>new { Modificadores=(l.Modificadores??[]).Order().ToArray(),
+                Componentes=(l.Componentes??[]).OrderBy(c=>c.ComponenteId).ThenBy(c=>c.ProductoId).Select(c=>new{c.ComponenteId,c.ProductoId,c.Cantidad}) }) });
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(serializado)));
     }
 }

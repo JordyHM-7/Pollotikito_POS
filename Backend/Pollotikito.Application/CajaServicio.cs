@@ -89,7 +89,7 @@ public sealed class CajaServicio(IComercio db, IAlmacen usuarios, IContextoActua
         var retiros = movimientos.Where(m => m.Tipo == TipoMovimiento.Retiro).Sum(m => m.Monto);
         var esperado = s.MontoInicial + vigentes.Sum(v => v.Pagos.Where(p => p.Metodo == MetodoPago.Efectivo).Sum(p => p.Recibido!.Value - p.Vuelto)) + depositos - retiros;
         return new(s, Resumen(vigentes), Resumen(anuladas), vigentes.Count, vigentes.Sum(v => v.Total), anuladas.Count, anuladas.Sum(v => v.Total),
-            vigentes.Sum(v => v.Descuento), depositos, retiros, s.Esperado ?? esperado, s.Contado, s.Diferencia, movimientos);
+            vigentes.Sum(v => v.Descuento), depositos, retiros, s.Esperado ?? esperado, s.Contado, s.Diferencia, movimientos,ventas.Select(VentaDto.De).ToList());
     }
     public void Auditar(string accion, string entidad, Guid id, object? anterior, object? nuevo) => db.Agregar(new Bitacora {
         SucursalId = contexto.SucursalId, UsuarioId = contexto.UsuarioId, Ip = contexto.Ip, FechaUtc = reloj.GetUtcNow(), Accion = accion,

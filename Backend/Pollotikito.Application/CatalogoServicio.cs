@@ -2,15 +2,19 @@ using Pollotikito.Domain;
 
 namespace Pollotikito.Application;
 
-public sealed class CatalogoServicio(IComercio db, IAlmacen administracion, IFotosProductos fotos, IContextoActual contexto)
+public sealed class CatalogoServicio(IComercio db, IAlmacen administracion, IFotosProductos fotos, IContextoActual contexto, MenuServicio menu)
 {
     public Task<List<Categoria>> Categorias() => db.Categorias();
-    public Task<List<Producto>> Productos() => db.Productos();
+    public async Task<List<Producto>> Productos()
+    {var productos=await db.Productos();ReglasMenu.Disponibilidad(productos,await db.Categorias(),await menu.Definicion());return productos;}
     public async Task<CatalogoDto> Caja()
     {
         var categorias = (await db.Categorias()).Where(x => x.Activo).ToList();
         var ids = categorias.Select(x => x.Id).ToHashSet();
-        return new(categorias, (await db.Productos()).Where(x => x.Activo && ids.Contains(x.CategoriaId)).ToList());
+        var definicion=await menu.Definicion();var productos=await db.Productos();ReglasMenu.Disponibilidad(productos,await db.Categorias(),definicion);
+        definicion=definicion with {ProductosComponentes=productos.Where(p=>p.Activo&&!p.EsCombo&&ids.Contains(p.CategoriaId)).ToList()};
+        // Los componentes requieren productos simples activos, aunque tengan sus propios grupos.
+        return new(categorias, productos.Where(x => x.Disponible).ToList(),definicion);
     }
     public Task<Categoria> GuardarCategoria(Guid? id, DatosCategoria d) => administracion.Transaccion(async () =>
     {
@@ -27,6 +31,13 @@ public sealed class CatalogoServicio(IComercio db, IAlmacen administracion, IFot
     public Task<Producto> GuardarProducto(Guid? id, DatosProducto d) => administracion.Transaccion(async () =>
     {
         var p = id.HasValue ? await db.Producto(id.Value) ?? throw new ErrorAplicacion(404, "Producto no encontrado.") : new Producto { SucursalId = contexto.SucursalId };
+        if(d.EsCombo&&!p.EsCombo)
+        {
+            var definicion=await menu.Definicion();
+            Validacion.Exigir(!definicion.Componentes.Any(c=>c.Activo&&(c.ProductoFijoId==p.Id||c.Opciones.Any(o=>o.Activo&&o.ProductoId==p.Id))),"El producto ya es componente de otro combo; no puede convertirse en combo.");
+        }
+        if(!d.EsCombo&&p.EsCombo)Validacion.Exigir((await menu.Combo(p.Id)).Count==0,"Quitá/desactivá los componentes antes de convertir el combo en producto simple.");
+        p.EsCombo=d.EsCombo;
         Validacion.Exigir(await db.Categoria(d.CategoriaId) != null, "Categoría no encontrada.");
         CalculoVenta.Dinero(d.Precio, "Precio"); CalculoVenta.ValidarDescuento(d.TipoDescuento, d.ValorDescuento);
         var iva = d.TarifaIva ?? (await administracion.Configuracion()).IvaPorDefecto;

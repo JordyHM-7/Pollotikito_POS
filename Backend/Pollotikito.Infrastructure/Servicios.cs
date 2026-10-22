@@ -37,6 +37,7 @@ public static class RegistroServicios
         s.AddScoped<UsuariosServicio>(); s.AddScoped<SeguridadServicio>(); s.AddScoped<ConfiguracionServicio>();
         s.AddScoped<IComercio, ComercioAlmacen>(); s.AddScoped<IFotosProductos, FotosProductos>();
         s.AddScoped<CatalogoServicio>(); s.AddScoped<CajaServicio>(); s.AddScoped<VentasServicio>();
+        s.AddScoped<IMenuRepositorio,MenuRepositorio>();s.AddScoped<MenuServicio>();
         return s;
     }
 
